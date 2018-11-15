@@ -11,7 +11,6 @@
 -- elegant matching algorithm.
 --
 -----------------------------------------------------------------------------
-
 module Brzozowski where
 
 import Regexp
@@ -42,4 +41,4 @@ instance Brzozowski [Char] where
   brzozowski (x:xs) = brzozowski xs . brzozowski x
 
 match :: RE -> String -> Bool
-match r = acceptsEmptyStr . foldr brzozowski r
+match r = acceptsEmptyStr . foldl (flip brzozowski) r
