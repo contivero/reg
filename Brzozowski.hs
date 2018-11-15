@@ -38,9 +38,8 @@ instance Brzozowski Char where
 
 -- Word derivative
 instance Brzozowski [Char] where
-  brzozowski [] = id
+  brzozowski []     = id
   brzozowski (x:xs) = brzozowski xs . brzozowski x
 
 match :: RE -> String -> Bool
-match r []     = acceptsEmptyStr r
-match r (c:cs) = match (brzozowski c r) cs
+match r = acceptsEmptyStr . foldr brzozowski r
