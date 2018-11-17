@@ -29,12 +29,13 @@ con (Con r s) t = Con r1 (Con r2 r3)
   where [r1, r2, r3] = sort [r, s, t]
 con r (Con s t) = Con r1 (Con r2 r3)
   where [r1, r2, r3] = sort [r, s, t]
--- concatenation unit
+-- Concatenation unit
 con Nil r = r
 con r Nil = r
 --
 con Bot r = Bot
 con r Bot = Bot
+
 -- r*r* = r*
 con u@(Kle r) v@(Kle s)
     | r == s    = Kle r
@@ -51,15 +52,27 @@ alt s@(Con r1 r2) t@(Con r3 r4)
     | r1 == r3  = con r1 (alt r2 r4)
     | r2 == r4  = con (alt r1 r3) r2
     | otherwise = Alt s t
--- alternation unit
+-- Alternation unit
 alt Bot r = r
 alt r Bot = r
--- r⁺|ε == r*
+-- r⁺|ε = ε|r⁺ = r*
 alt t@(Con r (Kle s)) Nil
-    | r == s    = Kle s
-    | otherwise = Alt t Nil
+    | r == s = Kle s
+alt Nil t@(Con r (Kle s))
+    | r == s = Kle s
+-- r|rs* = rs*
+alt r x@(Con t (Kle s))
+    | r == t = x
+-- r|s*r = s*r
+alt r x@(Con (Kle s) t)
+    | r == t = x
+-- ε|r* = r*
+-- r|r* = r*
+-- TODO generalize to rr|r* = r*, rrr|r*=r*,...
+alt Nil (Kle r) = Kle r
+alt r (Kle s)   = Kle s
 alt r s
-    -- Idempotent law
+    -- Idempotent law: r | r = r
     | r == s    = r
     | otherwise = Alt r1 r2
   where [r1, r2] = sort [r, s]
@@ -67,8 +80,15 @@ alt r s
 kle :: RE -> RE
 kle Bot     = Nil
 kle Nil     = Nil
-kle (Kle r) = Kle r
-kle r       = Kle r
+-- (ε|r)* = (r|ε)* = r*
+kle (Alt Nil r) = kle r
+kle (Alt r Nil) = kle r
+-- (r*|s*)* = (r*s*)* = (r|s)*
+kle (Kle (Con (Kle r) (Kle s))) = kle (alt r s)
+kle (Kle (Alt (Kle r) (Kle s))) = kle (alt r s)
+-- (r*)* = r*
+kle (Kle r) = r
+kle r = Kle r
 
 instance Semigroup RE where
   (<>) = con
