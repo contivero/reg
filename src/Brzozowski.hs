@@ -13,7 +13,7 @@
 -----------------------------------------------------------------------------
 module Brzozowski where
 
-import Regexp
+import RegEx
 
 -- We overload brzozowski to denote both the one character derivative, and its
 -- extension to words.
@@ -37,10 +37,11 @@ instance Brzozowski Char where
 
 -- Word derivative
 instance Brzozowski [Char] where
-  brzozowski []     = id
-  brzozowski (x:xs) = brzozowski xs . brzozowski x
+  brzozowski xs r = foldl (flip brzozowski) r xs
 
 -- A sequence s is contained in a regular expression R iff epsilon is contained
 -- in DsR (see Theorem 4.2 from Brzozowski's paper).
+-- Brzozowski's simple algorithm computes the DFA "on-the-fly", making it less
+-- efficient in time, but very efficient in space.
 match :: RE -> String -> Bool
-match r = acceptsEmptyStr . foldl (flip brzozowski) r
+match r xs = acceptsEmptyStr $ brzozowski xs r

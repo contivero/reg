@@ -1,3 +1,4 @@
+
 data DFA = DFA
   { _size :: Int                 -- Number of states
   , _trap :: Int                 -- The trap state for non-matching strings
