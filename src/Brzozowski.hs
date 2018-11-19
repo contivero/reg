@@ -13,7 +13,7 @@
 -----------------------------------------------------------------------------
 module Brzozowski where
 
-import RegEx
+import Regex
 
 -- We overload brzozowski to denote both the one character derivative, and its
 -- extension to words.

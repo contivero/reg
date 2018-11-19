@@ -1,8 +1,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveFunctor #-}
 
-module RegEx (
-      RE(..)
+module Regex (
+      Regex(..)
+    , RE
     , con
     , alt
     , kle
@@ -21,15 +24,16 @@ import Text.Megaparsec.Char
 import Language.Haskell.TH (Q, Exp)
 import Language.Haskell.TH.Quote
 
-data RE = Nil       -- ^ Empty string
-        | Bot       -- ^ Bottom, or the empty set, i.e. it matches nothing
-        | C Char    -- ^ A character literal
-        | Con RE RE -- ^ Concatenation: rs
-        | Alt RE RE -- ^ Alternation: r | s
-        | Kle RE    -- ^ Kleene closure: r*
-        -- | Fun2 (RE -> RE -> Bool) RE RE
-        -- | Fun1 (RE -> Bool) RE
-  deriving (Show, Eq, Ord, Data)
+data Regex a    -- 'a' amounts to the alphabet we are using
+    = Nil       -- ^ Empty string
+    | Bot       -- ^ Bottom, or the empty set, i.e. it matches nothing
+    | C a       -- ^ A character literal
+    | Con RE RE -- ^ Concatenation: rs
+    | Alt RE RE -- ^ Alternation: r | s
+    | Kle RE    -- ^ Kleene closure: r*
+  deriving (Show, Eq, Ord, Data, Functor)
+
+type RE = Regex Char
 
 -- We maintain the invariant that all REs are in ≈-canonical form by using smart
 -- constructors, and use structural equality to identify equivalent REs.
