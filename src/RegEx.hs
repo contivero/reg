@@ -11,18 +11,13 @@ module RegEx (
     ) where
 
 import Data.Data
-import Data.Semigroup
 import Data.Monoid (Monoid)
 import Data.List (sort)
 import Data.Void
 import Data.Functor
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import qualified Data.Set as Set
-import Control.Applicative hiding (some, many)
-import Control.Monad (mzero)
 
-import qualified Language.Haskell.TH as TH
 import Language.Haskell.TH (Q, Exp)
 import Language.Haskell.TH.Quote
 
@@ -41,16 +36,14 @@ data RE = Nil       -- ^ Empty string
 
 con :: RE -> RE -> RE
 -- We use associativity to 'normalize' based on order.
-con (Con r s) t = Con r1 (Con r2 r3)
-  where [r1, r2, r3] = sort [r, s, t]
-con r (Con s t) = Con r1 (Con r2 r3)
-  where [r1, r2, r3] = sort [r, s, t]
+con (Con r s) t = foldr1 Con (sort [r, s, t])
+con r (Con s t) = foldr1 Con (sort [r, s, t])
 -- Concatenation unit
 con Nil r = r
 con r Nil = r
 --
-con Bot r = Bot
-con r Bot = Bot
+con Bot _ = Bot
+con _ Bot = Bot
 
 -- r*r* = r*
 con u@(Kle r) v@(Kle s)
@@ -59,10 +52,8 @@ con u@(Kle r) v@(Kle s)
 con r s = Con r s
 
 alt :: RE -> RE -> RE
-alt (Alt r s) t = Alt r1 (Alt r2 r3)
-  where [r1, r2, r3] = sort [r, s, t]
-alt r (Alt s t) = Alt r1 (Alt r2 r3)
-  where [r1, r2, r3] = sort [r, s, t]
+alt (Alt r s) t = foldr1 Alt (sort [r, s, t])
+alt r (Alt s t) = foldr1 Alt (sort [r, s, t])
 -- Distributive law
 alt s@(Con r1 r2) t@(Con r3 r4)
     | r1 == r3  = con r1 (alt r2 r4)
@@ -92,8 +83,7 @@ alt r k@(Kle s)
 alt r s
     -- Idempotent law: r | r = r
     | r == s    = r
-    | otherwise = Alt r1 r2
-  where [r1, r2] = sort [r, s]
+    | otherwise = foldr1 Alt (sort [r, s])
 
 kle :: RE -> RE
 kle Bot     = Nil
