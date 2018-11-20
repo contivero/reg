@@ -16,28 +16,34 @@ module Antimirov where
 import qualified Data.Set as Set
 import Data.Set (Set)
 
-import Regexp
+import Regex
 
 --(∩) = Set.intersection
+(∪) :: Ord a => Set a -> Set a -> Set a
 (∪) = Set.union
+
+(∅) :: Set a
 (∅) = Set.empty
 --(⊆) = Set.isSubsetOf
 --(⊊) = Set.isProperSubsetOf
 --(∈) = Set.member
 
+-- | Given a regular expression r, and a symbol c from the alphabet, returns the
+-- set of partial derivatives of r.
 class Antimirov a where
-  antimirov :: a -> RE -> Set RE
+  antimirov :: RE -> a -> Set RE
 
 -- 1 character partial derivative
 instance Antimirov Char where
-  antimirov c = 𝛿
+  antimirov r c = 𝛿 r
     where
+      𝛿 Nil       = (∅)
       𝛿 Bot       = (∅)
-      𝛿 (Kle r)   = Set.map (\s -> Con s (Kle r)) (𝛿 r)
-      𝛿 (Alt r s) = (𝛿 r) ∪ (𝛿 s)
-      𝛿 (Con r s)
-          | acceptsEmptyStr r = Set.map (\r -> Con r s) (𝛿 r) ∪ (𝛿 s)
-          | otherwise         = Set.map (\r -> Con r s) (𝛿 r)
+      𝛿 (Kle t)   = Set.map (\s -> Con s (Kle t)) (𝛿 t)
+      𝛿 (Alt t s) = (𝛿 t) ∪ (𝛿 s)
+      𝛿 (Con t s)
+          | acceptsEmptyStr t = Set.map (\x -> Con x s) (𝛿 t) ∪ (𝛿 s)
+          | otherwise         = Set.map (\x -> Con x s) (𝛿 t)
       𝛿 (C a)
           | c == a    = Set.singleton Nil
           | otherwise = (∅)
@@ -49,5 +55,7 @@ toRE s
 
 -- word partial derivative
 instance Antimirov [Char] where
-  antimirov []     = Set.singleton
-  antimirov (x:xs) = antimirov xs . toRE . antimirov x
+  antimirov r ys = Set.singleton $ foldl (\x xs -> toRE (antimirov x xs)) r ys
+
+match :: RE -> String -> Bool
+match r = acceptsEmptyStr . toRE . antimirov r
