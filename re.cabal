@@ -1,0 +1,60 @@
+name:           re
+version:        0.1.0.0
+license:        BSD3
+license-file:   LICENSE
+author:         (c) 2017 Cristian Adrián Ontivero <cristianontivero@gmail.com>
+maintainer:     Cristian Adrián Ontivero <cristianontivero@gmail.com>
+copyright:      2018 Author name here
+synopsis:       Regular Expressions
+description:    See README
+homepage:       https://github.com/contivero/hasmin#readme
+bug-reports:    https://github.com/contivero/hasmin/issues
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    ChangeLog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/re
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_re
+  hs-source-dirs:
+      src
+  build-depends:
+      base                  >=4.7    && <5
+    , containers            >=0.5    && <0.7
+    , template-haskell      >=2.13   && <2.15
+    , megaparsec            >=6.5    && <7.1
+    , text                  >=1.2.3  && <1.3
+  default-language: Haskell2010
+
+executable re-exe
+  default-language:    Haskell2010
+  ghc-options:         -O2 -Wall -fwarn-tabs -fwarn-unused-do-bind -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Wnoncanonical-monad-instances -Wnoncanonical-monadfail-instances -Wredundant-constraints -Werror=incomplete-patterns
+  main-is: Main.hs
+  other-modules:
+      Paths_re
+  hs-source-dirs:
+      app
+  build-depends:
+      base >=4.7 && <5
+    , re
+
+test-suite re-test
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_re
+  hs-source-dirs:
+      test
+  ghc-options:         -O2 -Wall -fwarn-tabs -fwarn-unused-do-bind -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Wnoncanonical-monad-instances -Wnoncanonical-monadfail-instances -Wredundant-constraints -Werror=incomplete-patterns
+  build-depends:
+      base >=4.7 && <5
+    , re
