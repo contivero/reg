@@ -40,7 +40,7 @@ type RE = Regex Char
 -- We maintain the invariant that all REs are in ≈-canonical form by using smart
 -- constructors, and use structural equality to identify equivalent REs.
 
-con :: (Ord a, Eq a) => Regex a -> Regex a -> Regex a
+con :: Ord a => Regex a -> Regex a -> Regex a
 -- We use associativity to 'normalize' based on order.
 con (Con r s) t = foldr1 Con (sort [r, s, t])
 con r (Con s t) = foldr1 Con (sort [r, s, t])
@@ -57,7 +57,7 @@ con u@(Kle r) v@(Kle s)
     | otherwise = Con u v
 con r s = Con r s
 
-alt :: (Ord a, Eq a) => Regex a -> Regex a -> Regex a
+alt :: Ord a => Regex a -> Regex a -> Regex a
 alt (Alt r s) t = foldr1 Alt (sort [r, s, t])
 alt r (Alt s t) = foldr1 Alt (sort [r, s, t])
 -- Distributive law
@@ -91,7 +91,7 @@ alt r s
     | r == s    = r
     | otherwise = foldr1 Alt (sort [r, s])
 
-kle :: (Ord a, Eq a) => Regex a -> Regex a
+kle :: Ord a => Regex a -> Regex a
 kle Bot     = Nil
 kle Nil     = Nil
 -- (ε|r)* = (r|ε)* = r*
